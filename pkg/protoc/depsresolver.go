@@ -45,6 +45,11 @@ type DepsResolver func(c *config.Config, ix *resolve.RuleIndex, r *rule.Rule, im
 func ResolveDepsAttr(attrName string, excludeWkt bool) DepsResolver {
 	return func(c *config.Config, ix *resolve.RuleIndex, r *rule.Rule, imports []string, from label.Label) {
 		debug := false
+		pc := GetPackageConfig(c)
+		var strip_prefix string
+		if pc != nil {
+			strip_prefix = pc.GetStripPathPrefix()
+		}
 
 		if debug {
 			log.Printf("%v (%s.%s): resolving %d imports: %v", from, r.Kind(), attrName, len(imports), imports)
@@ -73,6 +78,14 @@ func ResolveDepsAttr(attrName string, excludeWkt bool) DepsResolver {
 			impLang := r.Kind()
 			if overrideImpLang, ok := r.PrivateAttr(ResolverImpLangPrivateKey).(string); ok {
 				impLang = overrideImpLang
+			}
+			// imp is one of the imports as defined in the proto file, if there is some prefixed folders
+			// that are striped (see `proto_strip_import_prefix`), imp won't contains them and when we
+			// try to resolve the import it fails because no existing rules has it and so dependencies are
+			// not properly generated.
+			// To work around that we readd the striped prefix.
+			if strip_prefix != "" {
+				imp = fmt.Sprintf("%s/%s", strip_prefix[1:], imp)
 			}
 
 			if debug {
