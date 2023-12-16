@@ -62,7 +62,7 @@ func pythonGeneratedFileName(reldir string) func(f *protoc.File) []string {
 }
 
 // pythonPluginOptions represents the parsed flag configuration for the
-// ProtocGenTsProto implementation.
+// builtin:python implementation.
 type pythonPluginOptions struct {
 	excludeOutput map[string]bool
 }
