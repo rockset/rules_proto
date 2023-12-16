@@ -21,6 +21,8 @@ const (
 	PluginDirective = "proto_plugin"
 	// importpathPrefixDirective is the same as 'gazelle:prefix'
 	importpathPrefixDirective = "prefix"
+	// stripimportpathPrefixDirective is the same as 'gazelle:proto_strip_import_prefix'
+	stripimportpathPrefixDirective = "proto_strip_import_prefix"
 )
 
 // PackageConfig represents the config extension for the protobuf language.
@@ -29,6 +31,8 @@ type PackageConfig struct {
 	Config *config.Config
 	// the gazelle:prefix for golang
 	importpathPrefix string
+	// the gazelle:proto_strip_import_prefix for proto
+	stripPathPrefix string
 	// configured languages for this package
 	langs map[string]*LanguageConfig
 	// exclude patterns for rules that should be skipped for this package.
@@ -37,6 +41,10 @@ type PackageConfig struct {
 	rules map[string]*LanguageRuleConfig
 	// IMPORTANT! Adding new fields here?  Don't forget to copy it in the Clone
 	// method!
+}
+
+func (c *PackageConfig) GetStripPathPrefix() string {
+	return c.stripPathPrefix
 }
 
 // GetPackageConfig returns the associated package config.
@@ -74,6 +82,7 @@ func (c *PackageConfig) Plugin(name string) (LanguagePluginConfig, bool) {
 func (c *PackageConfig) Clone() *PackageConfig {
 	clone := NewPackageConfig(c.Config)
 	clone.importpathPrefix = c.importpathPrefix
+	clone.stripPathPrefix = c.stripPathPrefix
 
 	for k, v := range c.rules {
 		clone.rules[k] = v.clone()
@@ -94,6 +103,8 @@ func (c *PackageConfig) Clone() *PackageConfig {
 func (c *PackageConfig) ParseDirectives(rel string, directives []rule.Directive) (err error) {
 	for _, d := range directives {
 		switch d.Key {
+		case stripimportpathPrefixDirective:
+			err = c.parseStripPrefixDirective(d)
 		case importpathPrefixDirective:
 			err = c.parsePrefixDirective(d)
 		case PluginDirective:
@@ -108,6 +119,11 @@ func (c *PackageConfig) ParseDirectives(rel string, directives []rule.Directive)
 		}
 	}
 	return
+}
+
+func (c *PackageConfig) parseStripPrefixDirective(d rule.Directive) error {
+	c.stripPathPrefix = strings.TrimSpace(d.Value)
+	return nil
 }
 
 func (c *PackageConfig) parsePrefixDirective(d rule.Directive) error {
