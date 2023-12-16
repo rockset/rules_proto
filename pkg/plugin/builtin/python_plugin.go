@@ -41,8 +41,9 @@ func (p *PythonPlugin) Configure(ctx *protoc.PluginContext) *protoc.PluginConfig
 		pyOutputs = append(pyOutputs, pyFile)
 	}
 
+	// FIXME: make it configurable
 	return &protoc.PluginConfiguration{
-		Label:   label.New("build_stack_rules_proto", "plugin/builtin", "python"),
+		Label:   label.New("", "bazel", "python"),
 		Outputs: pyOutputs,
 		Options: ctx.PluginConfig.GetOptions(),
 	}

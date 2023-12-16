@@ -26,8 +26,9 @@ func (p *ProtocGenGrpcPython) Configure(ctx *protoc.PluginContext) *protoc.Plugi
 	if !protoc.HasServices(ctx.ProtoLibrary.Files()...) {
 		return nil
 	}
+	// FIXME: make it configurable
 	return &protoc.PluginConfiguration{
-		Label: label.New("build_stack_rules_proto", "plugin/grpc/grpc", "protoc-gen-grpc-python"),
+		Label:    label.New("", "bazel", "protoc-gen-grpc-python"),
 		Outputs: protoc.FlatMapFiles(
 			grpcGeneratedFileName(ctx.Rel),
 			protoc.HasService,
